@@ -14,12 +14,19 @@ Prepared on 2026-10-19 using Go 1.26.9 on Linux amd64.
 
 Compose validation used the standalone Docker Compose CLI. It did not start containers.
 
-## Included but not executed here
+## Executed successfully in GitHub Actions
 
-The integration suite exercises actual RabbitMQ and PostgreSQL, including concurrent duplicate deliveries, envelope preservation, dead-letter transfer, unroutable publication, conflicting identities and killing a consumer after commit but before ACK.
+The [successful CI run](https://github.com/distributed-systerms-lab/queue-service/actions/runs/39331232300) verified implementation commit `2295bf0f1f6b087ac3c06894181c86645b77da82` with:
 
-These tests require `make integration-up` followed by `make integration`. This preparation environment has no Docker engine. The runtime image has not been built here, and the GitHub Actions workflow has not run.
+- Formatting, `go vet`, and unit tests with the race detector.
+- The pinned govulncheck scan.
+- Real RabbitMQ 4.3 and PostgreSQL 17 dependencies started through Docker Compose.
+- Integration tests with the race detector, including concurrent duplicate deliveries, envelope preservation, dead-letter transfer, unroutable publication, conflicting identities and killing an actual consumer process after commit but before ACK.
+- Application Compose configuration validation.
+- Building the multi-stage, non-root runtime image.
+
+The application Compose has not been exercised as a complete deployment here. CI tests the real broker/database flow through Go processes and builds the application image separately. The manual restart and scaling experiments remain documented in `failure-experiments.md`.
 
 ## Repository publication
 
-The repository is readable. Both Git tree creation and file creation returned `403: Resource not accessible by integration`. No files were uploaded and the remote main branch was left unchanged. Local commits retain the implementation for publication after GitHub access is corrected.
+The implementation, tests and documentation are published on the repository's `main` branch. The GitHub App installation on the organization resolved the earlier integration authorization failure. The documentation-only commit recording these results does not change the verified implementation.
