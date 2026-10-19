@@ -1,0 +1,39 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Format, vet and race tests
+        run: make check
+      - name: Check known vulnerabilities
+        run: make audit
+      - name: Start real dependencies
+        run: make integration-up
+      - name: Integration tests
+        run: make integration
+      - name: Validate the application Compose
+        env:
+          RABBITMQ_PASSWORD: ci-validation-only
+          POSTGRES_PASSWORD: ci-validation-only
+        run: docker compose config --quiet
+      - name: Build the runtime image
+        run: docker build --tag queue-service:ci .
+      - name: Dependency logs
+        if: failure()
+        run: docker compose -f compose.test.yaml logs
+      - name: Stop dependencies
+        if: always()
+        run: make integration-down
