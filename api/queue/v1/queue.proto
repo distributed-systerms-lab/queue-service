@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package queue.v1;
+
+option go_package = "github.com/distributed-systerms-lab/queue-service/gen/queue/v1;queuev1";
+
+// QueueService accepts messages. Success confirms broker acceptance, not processing.
+service QueueService {
+  rpc Publish(PublishRequest) returns (PublishResponse);
+}
+
+message Message {
+  // Reuse the same ID when retrying a request with an uncertain outcome.
+  string id = 1;
+  string type = 2;
+  bytes payload = 3;
+  string correlation_id = 4;
+  string causation_id = 5;
+}
+
+message PublishRequest {
+  // Queues must belong to the configured allowlist.
+  string queue = 1;
+  Message message = 2;
+}
+
+message PublishResponse {
+  string message_id = 1;
+}
